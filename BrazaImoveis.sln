@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrazaImoveis.API", "BrazaImoveis.API\BrazaImoveis.API.csproj", "{77A81C05-4BCB-42D0-876D-BA601545D975}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrazaImoveis.WebCrawler", "BrazaImoveis.WebCrawler\BrazaImoveis.WebCrawler.csproj", "{28A238C7-58EF-4B3A-B425-78908B857E8A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrazaImoveis.WebCrawler.Client", "BrazaImoveis.WebCrawler.Client\BrazaImoveis.WebCrawler.Client.csproj", "{1AD8D5FC-B479-4C1F-A70D-5064F87E69A4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrazaImoveis.Infrastructure", "BrazaImoveis.Infrastructure\BrazaImoveis.Infrastructure.csproj", "{74D4CD86-BC6F-4655-A684-93BF908670B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrazaImoveis.Contracts", "BrazaImoveis.Contracts\BrazaImoveis.Contracts.csproj", "{9B79C9A0-8692-4291-9A36-1387CAA0BFC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77A81C05-4BCB-42D0-876D-BA601545D975}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77A81C05-4BCB-42D0-876D-BA601545D975}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77A81C05-4BCB-42D0-876D-BA601545D975}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77A81C05-4BCB-42D0-876D-BA601545D975}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28A238C7-58EF-4B3A-B425-78908B857E8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28A238C7-58EF-4B3A-B425-78908B857E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28A238C7-58EF-4B3A-B425-78908B857E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28A238C7-58EF-4B3A-B425-78908B857E8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AD8D5FC-B479-4C1F-A70D-5064F87E69A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AD8D5FC-B479-4C1F-A70D-5064F87E69A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AD8D5FC-B479-4C1F-A70D-5064F87E69A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AD8D5FC-B479-4C1F-A70D-5064F87E69A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74D4CD86-BC6F-4655-A684-93BF908670B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74D4CD86-BC6F-4655-A684-93BF908670B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74D4CD86-BC6F-4655-A684-93BF908670B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74D4CD86-BC6F-4655-A684-93BF908670B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B79C9A0-8692-4291-9A36-1387CAA0BFC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B79C9A0-8692-4291-9A36-1387CAA0BFC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B79C9A0-8692-4291-9A36-1387CAA0BFC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B79C9A0-8692-4291-9A36-1387CAA0BFC1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {772EE8A0-2E93-45E0-8D90-2EB1B5AD3CA0}
+	EndGlobalSection
+EndGlobal
