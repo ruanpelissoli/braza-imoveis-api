@@ -13,4 +13,8 @@
     <PackageReference Include="supabase-csharp" Version="0.9.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BrazaImoveis.Contracts\BrazaImoveis.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

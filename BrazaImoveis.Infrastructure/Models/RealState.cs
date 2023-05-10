@@ -34,6 +34,21 @@ public class RealState : BaseDatabaseModel
     [Column("details_xpath")]
     public string DetailsXpath { get; set; } = null!;
 
+    [Column("filter_bedrooms_xpath")]
+    public string FilterBedroomsXpath { get; set; } = null!;
+
+    [Column("filter_bathrooms_xpath")]
+    public string FilterBathroomsXpath { get; set; } = null!;
+
+    [Column("filter_garagespace_xpath")]
+    public string FilterGarageSpacesXpath { get; set; } = null!;
+
+    [Column("filter_squarefoot_xpath")]
+    public string FilterSquareFootXpath { get; set; } = null!;
+
+    [Column("filter_cost_xpath")]
+    public string FilterCostXpath { get; set; } = null!;
+
     [Column("time_between_requests")]
     public int TimeBetweenRequests { get; set; }
 }

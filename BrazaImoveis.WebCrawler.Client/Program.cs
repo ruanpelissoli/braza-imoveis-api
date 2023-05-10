@@ -24,6 +24,7 @@ try
     foreach (var model in await database.GetAll<RealState>())
     {
         await engine.Run(model);
+        //await engine.FillFilters(model);
     }
 }
 catch (Exception ex)

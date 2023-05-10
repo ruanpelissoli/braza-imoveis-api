@@ -5,6 +5,8 @@ public static class StringExtensions
     {
         return text
                 .Replace("\n\r", Environment.NewLine)
+                .Replace("\r\n", Environment.NewLine)
+                .Replace("\t", string.Empty)
                 .Trim();
     }
 }

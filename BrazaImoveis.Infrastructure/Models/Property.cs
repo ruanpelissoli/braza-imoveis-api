@@ -22,4 +22,19 @@ public class Property : BaseDatabaseModel
 
     [Column("details")]
     public string Details { get; set; } = null!;
+
+    [Column("filter_bedrooms")]
+    public int? FilterBedrooms { get; set; }
+
+    [Column("filter_bathrooms")]
+    public int? FilterBathrooms { get; set; }
+
+    [Column("filter_garagespace")]
+    public int? FilterGarageSpaces { get; set; }
+
+    [Column("filter_squarefoot")]
+    public decimal? FilterSquareFoot { get; set; }
+
+    [Column("filter_cost")]
+    public decimal? FilterCost { get; set; }
 }

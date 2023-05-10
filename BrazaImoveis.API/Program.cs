@@ -1,3 +1,4 @@
+using BrazaImoveis.Contracts.Requests;
 using BrazaImoveis.Contracts.Responses;
 using BrazaImoveis.Infrastructure;
 using BrazaImoveis.Infrastructure.Database;
@@ -30,13 +31,30 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.MapGet("/properties", async (
+    [FromQuery] int? bedrooms,
+    [FromQuery] int? bathrooms,
+    [FromQuery] int? garageSpaces,
+    [FromQuery] decimal? price,
+    [FromQuery] decimal? squareFoot,
+    [FromQuery] int? page,
+    [FromQuery] int? size,
     [FromServices] IDatabaseClient client) =>
 {
-    var realStates = await client.GetAll<RealState>();
+
+    var filters = new PropertiesFilterRequest
+    {
+        Bedrooms = bedrooms,
+        Bathrooms = bathrooms,
+        GarageSpaces = garageSpaces,
+        Price = price,
+        SquareFoot = squareFoot,
+        Page = page ?? 0,
+        Size = size ?? 10
+    };
+
+    var properties = await client.FilterProperties(filters);
 
     var responseList = new List<GetPropertiesResponse>();
-
-    var properties = await client.GetAll<Property>();
 
     foreach (var property in properties)
     {
