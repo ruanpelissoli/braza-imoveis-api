@@ -21,11 +21,13 @@ var database = serviceProvider.GetRequiredService<IDatabaseClient>();
 
 try
 {
-    foreach (var model in await database.GetAll<RealState>())
-    {
-        await engine.Run(model);
-        //await engine.FillFilters(model);
-    }
+    var realState = (await database.GetAll<RealState>(w => w.Id == 4)).First();
+
+    //foreach (var model in await database.GetAll<RealState>())
+    await engine.Run(realState);
+    //await engine.Run(model);
+
+    Console.ReadLine();
 }
 catch (Exception ex)
 {

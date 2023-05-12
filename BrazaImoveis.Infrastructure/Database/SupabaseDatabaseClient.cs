@@ -2,6 +2,7 @@
 using BrazaImoveis.Infrastructure.Models;
 using Postgrest;
 using System.Linq.Expressions;
+using static Postgrest.Constants;
 using static Postgrest.QueryOptions;
 
 namespace BrazaImoveis.Infrastructure.Database;
@@ -12,7 +13,7 @@ public interface IDatabaseClient
     Task<IEnumerable<TModel>> GetAll<TModel>() where TModel : BaseDatabaseModel, new();
     Task<IEnumerable<TModel>> GetAll<TModel>(Expression<Func<TModel, bool>> predicate) where TModel : BaseDatabaseModel, new();
     Task<TModel> Insert<TModel>(TModel model) where TModel : BaseDatabaseModel, new();
-    Task Insert<TModel>(IEnumerable<TModel> models) where TModel : BaseDatabaseModel, new();
+    Task<IEnumerable<TModel>> Insert<TModel>(IEnumerable<TModel> models) where TModel : BaseDatabaseModel, new();
     Task Delete<TModel>(long id) where TModel : BaseDatabaseModel, new();
     Task Update<TModel>(TModel model) where TModel : BaseDatabaseModel, new();
     Task<IEnumerable<Property>> FilterProperties(PropertiesFilterRequest filter);
@@ -63,9 +64,11 @@ internal class SupabaseDatabaseClient : IDatabaseClient
         return result.Models.First();
     }
 
-    public async Task Insert<TModel>(IEnumerable<TModel> models) where TModel : BaseDatabaseModel, new()
+    public async Task<IEnumerable<TModel>> Insert<TModel>(IEnumerable<TModel> models) where TModel : BaseDatabaseModel, new()
     {
-        await _supabaseClient.From<TModel>().Insert(models.ToList());
+        var result = await _supabaseClient.From<TModel>().Insert(models.ToList());
+
+        return result.Models;
     }
 
     public async Task Delete<TModel>(long id) where TModel : BaseDatabaseModel, new()
@@ -85,33 +88,26 @@ internal class SupabaseDatabaseClient : IDatabaseClient
         var db = _supabaseClient.From<Property>().Where(f => f.Enabled == true);
 
         if (filter.Bedrooms.HasValue)
-        {
             db = db.Where(x => x.FilterBedrooms == filter.Bedrooms.Value);
-        }
 
         if (filter.Bathrooms.HasValue)
-        {
             db = db.Where(x => x.FilterBathrooms == filter.Bathrooms.Value);
-        }
 
         if (filter.GarageSpaces.HasValue)
-        {
             db = db.Where(x => x.FilterGarageSpaces == filter.GarageSpaces.Value);
-        }
 
         if (filter.Price.HasValue)
-        {
             db = db.Where(x => x.FilterCost <= filter.Price.Value);
-        }
 
         if (filter.SquareFoot.HasValue)
-        {
             db = db.Where(x => x.FilterSquareFoot <= filter.SquareFoot.Value);
-        }
 
         var (from, to) = GetPagination(filter.Page, filter.Size);
 
-        var result = await db.Range(from, to).Get();
+        var result = await db
+            .Order(o => o.CreatedAt, Ordering.Descending)
+            .Range(from, to)
+            .Get();
 
         return result.Models;
     }

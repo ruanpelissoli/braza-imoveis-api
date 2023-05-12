@@ -49,6 +49,15 @@ public class RealState : BaseDatabaseModel
     [Column("filter_cost_xpath")]
     public string FilterCostXpath { get; set; } = null!;
 
+    [Column("pagination_type")]
+    public string PaginationType { get; set; } = null!;
+
+    [Column("notfound_xpath")]
+    public string NotFoundXpath { get; set; } = null!;
+
+    [Column("notfound_text")]
+    public string NotFoundText { get; set; } = null!;
+
     [Column("time_between_requests")]
     public int TimeBetweenRequests { get; set; }
 }
