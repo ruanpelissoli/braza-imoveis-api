@@ -15,6 +15,7 @@ public interface IDatabaseClient
     Task<TModel> Insert<TModel>(TModel model) where TModel : BaseDatabaseModel, new();
     Task<IEnumerable<TModel>> Insert<TModel>(IEnumerable<TModel> models) where TModel : BaseDatabaseModel, new();
     Task Delete<TModel>(long id) where TModel : BaseDatabaseModel, new();
+    Task Delete<TModel>(Expression<Func<TModel, bool>> predicate) where TModel : BaseDatabaseModel, new();
     Task Update<TModel>(TModel model) where TModel : BaseDatabaseModel, new();
     Task<IEnumerable<Property>> FilterProperties(PropertiesFilterRequest filter);
 }
@@ -32,7 +33,7 @@ internal class SupabaseDatabaseClient : IDatabaseClient
     public async Task<TModel?> GetById<TModel>(long id) where TModel : BaseDatabaseModel, new()
     {
         var dbResponse = await _supabaseClient.From<TModel>()
-            .Where(t => t.Enabled && t.Id == id)
+            .Where(t => t.Enabled == true && t.Id == id)
             .Get();
 
         return dbResponse.Models.FirstOrDefault();
@@ -78,6 +79,13 @@ internal class SupabaseDatabaseClient : IDatabaseClient
              .Delete();
     }
 
+    public async Task Delete<TModel>(Expression<Func<TModel, bool>> predicate) where TModel : BaseDatabaseModel, new()
+    {
+        await _supabaseClient.From<TModel>()
+            .Where(predicate)
+            .Delete();
+    }
+
     public async Task Update<TModel>(TModel model) where TModel : BaseDatabaseModel, new()
     {
         await _supabaseClient.From<TModel>().Update(model);
@@ -86,6 +94,12 @@ internal class SupabaseDatabaseClient : IDatabaseClient
     public async Task<IEnumerable<Property>> FilterProperties(PropertiesFilterRequest filter)
     {
         var db = _supabaseClient.From<Property>().Where(f => f.Enabled == true);
+
+        if (!string.IsNullOrWhiteSpace(filter.Type))
+        {
+            var t = filter.Type.ToUpper();
+            db = db.Where(x => x.FilterType == t);
+        }
 
         if (filter.Bedrooms.HasValue)
             db = db.Where(x => x.FilterBedrooms == filter.Bedrooms.Value);

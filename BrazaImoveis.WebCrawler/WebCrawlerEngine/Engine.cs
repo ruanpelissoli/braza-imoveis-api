@@ -25,8 +25,8 @@ public class Engine : IWebCrawlerEnginer
     private ConcurrentBag<TempPropertyImage> _propertyImagesToInsert = new();
     private ConcurrentBag<string> _visitedUrls = new();
 
-    private readonly ParallelOptions _parallelOptions;
-    private readonly CancellationTokenSource cancellationTokenSource;
+    private ParallelOptions ParallelOptions { get; set; } = null!;
+    private CancellationTokenSource CancellationTokenSource { get; set; } = null!;
 
     public Engine(IDatabaseClient databaseClient)
     {
@@ -34,14 +34,6 @@ public class Engine : IWebCrawlerEnginer
         _browser = new ScrapingBrowser
         {
             IgnoreCookies = true
-        };
-
-        cancellationTokenSource = new CancellationTokenSource();
-
-        _parallelOptions = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = 10,
-            CancellationToken = cancellationTokenSource.Token
         };
     }
 
@@ -74,18 +66,28 @@ public class Engine : IWebCrawlerEnginer
 
     public async Task Run(RealState realState, bool shouldInsertIntoDb = false)
     {
+        Console.WriteLine($"Starting scrapping {realState.Name}");
+
+        CancellationTokenSource = new CancellationTokenSource();
+
+        ParallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = 8,
+            CancellationToken = CancellationTokenSource.Token
+        };
+
         var visited = (await _databaseClient.GetAll<Property>(w => w.RealStateId == realState.Id)).Select(s => s.Url.Replace(realState.DomainUrl!, ""));
 
         _visitedUrls = new ConcurrentBag<string>(visited);
 
         try
         {
-            await Parallel.ForEachAsync(realState.FilterResultsUrls.Split(','), _parallelOptions,
+            await Parallel.ForEachAsync(realState.FilterResultsUrls.Split(','), ParallelOptions,
             async (searchUrl, token) =>
             {
                 var currentPage = 1;
 
-                if (cancellationTokenSource.IsCancellationRequested) return;
+                if (CancellationTokenSource.IsCancellationRequested) return;
 
                 string url = $"{realState.DomainUrl}{searchUrl}";
 
@@ -118,18 +120,18 @@ public class Engine : IWebCrawlerEnginer
 
     private async Task FetchPageInformation(RealState realState, string url, int currentPage)
     {
-        if (cancellationTokenSource.IsCancellationRequested) return;
+        if (CancellationTokenSource.IsCancellationRequested) return;
 
         var page = await _browser.NavigateToPageAsync(new Uri(url));
 
-        if (page.Html.SelectSingleNode(realState.NotFoundXpath) != null
+        if (realState.NotFoundXpath != null && page.Html.SelectSingleNode(realState.NotFoundXpath) != null
             && page.Html.SelectSingleNode(realState.NotFoundXpath).InnerText.Contains(realState.NotFoundText))
             return;
 
         var links = page.GetAllValidLinks(realState).ToList()
                         .Where(s => !_visitedUrls.Contains(s));
 
-        await Parallel.ForEachAsync(links, _parallelOptions,
+        await Parallel.ForEachAsync(links, ParallelOptions,
         async (link, ct) =>
         {
             var nextUrl = $"{realState.DomainUrl}{link}";
@@ -151,8 +153,6 @@ public class Engine : IWebCrawlerEnginer
             }
             else
                 SavePageDetails(realState, await _browser.NavigateToPageAsync(new Uri(nextUrl)));
-
-            // Thread.Sleep(TimeSpan.FromSeconds(realState.TimeBetweenRequests));
         });
 
         if (realState.PaginationType == PaginationTypes.ScrollWithPaging)
@@ -182,9 +182,8 @@ public class Engine : IWebCrawlerEnginer
             if (detailsList != null && detailsList.Name == "div")
             {
                 foreach (var child in detailsList.ChildNodes)
-                {
                     details += $"{child.InnerText},";
-                }
+
             }
             else if (detailsList != null && detailsList.Name == "ul")
                 details = string.Join(", ", detailsList?.CssSelect("li").Select(s => s.InnerText) ?? Array.Empty<string>());
@@ -195,18 +194,27 @@ public class Engine : IWebCrawlerEnginer
             var priceText = detailPage.Html.SelectSingleNode(realState.FilterCostXpath)?.InnerText;
             var squarefootText = detailPage.Html.SelectSingleNode(realState.FilterSquareFootXpath)?.InnerText;
 
-            _ = decimal.TryParse(string.IsNullOrWhiteSpace(priceText) ? null : priceText
-                     .Replace("R$", "")
-                     .Replace("&nbsp;", "")
-                     .Replace(".", "")
-                     .Replace(",", ".").Trim(), out decimal filterCost);
 
-            _ = decimal.TryParse(string.IsNullOrWhiteSpace(squarefootText) ? null : squarefootText
-                    .Replace("&nbsp;", "")
-                    .Replace(".", "")
-                    .Replace(",", ".")
-                    .Replace("m²", "")
-                    .Trim(), out decimal filterSquareFoot);
+            var typeText = string.Empty;
+
+            if (string.IsNullOrEmpty(realState.FilterTypeXpath))
+            {
+                var startUrl = detailPage.AbsoluteUrl.ToString().Replace(realState.DomainUrl, string.Empty);
+
+                foreach (var s in realState.PropertyDetailPrefix.Split(','))
+                {
+                    if (startUrl.StartsWith(s))
+                    {
+                        typeText = s.Replace("/", string.Empty).ToUpperInvariant();
+                        break;
+                    }
+                }
+            }
+            else typeText = detailPage.Html.SelectSingleNode(realState.FilterTypeXpath)?.InnerText;
+
+            _ = decimal.TryParse(string.IsNullOrWhiteSpace(priceText) ? null : priceText.SanitizeToDecimal(), out decimal filterCost);
+
+            _ = decimal.TryParse(string.IsNullOrWhiteSpace(squarefootText) ? null : squarefootText.SanitizeToDecimal(), out decimal filterSquareFoot);
 
             var property = new Property
             {
@@ -221,7 +229,8 @@ public class Engine : IWebCrawlerEnginer
                 FilterBathrooms = string.IsNullOrWhiteSpace(bathroomsText) ? null : int.Parse(bathroomsText),
                 FilterGarageSpaces = string.IsNullOrWhiteSpace(garageSpaceText) ? null : int.Parse(garageSpaceText),
                 FilterCost = filterCost == default ? null : filterCost,
-                FilterSquareFoot = filterSquareFoot == default ? null : filterSquareFoot
+                FilterSquareFoot = filterSquareFoot == default ? null : filterSquareFoot,
+                FilterType = typeText!,
             };
 
             _propertiesToInsert.Add(property);
@@ -231,7 +240,7 @@ public class Engine : IWebCrawlerEnginer
                 _propertyImagesToInsert.Add(new TempPropertyImage(property.Url, img));
 
             if (_propertiesToInsert.Count >= 50)
-                cancellationTokenSource.Cancel(false);
+                CancellationTokenSource.Cancel(false);
         }
         catch (Exception ex)
         {

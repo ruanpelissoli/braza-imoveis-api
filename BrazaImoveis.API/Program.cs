@@ -31,6 +31,7 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.MapGet("/properties", async (
+    [FromQuery] string? type,
     [FromQuery] int? bedrooms,
     [FromQuery] int? bathrooms,
     [FromQuery] int? garageSpaces,
@@ -43,6 +44,7 @@ app.MapGet("/properties", async (
 
     var filters = new PropertiesFilterRequest
     {
+        Type = type,
         Bedrooms = bedrooms,
         Bathrooms = bathrooms,
         GarageSpaces = garageSpaces,
@@ -65,16 +67,23 @@ app.MapGet("/properties", async (
             Url = property.Url,
             Title = property.Title,
             Price = property.Price,
-            Description = property.Description,
-            Details = property.Details,
+            FilterBathrooms = property.FilterBathrooms,
+            FilterBedrooms = property.FilterBedrooms,
+            FilterCost = property.FilterCost,
+            FilterGarageSpaces = property.FilterGarageSpaces,
+            FilterSquareFoot = property.FilterSquareFoot,
+            FilterType = property.FilterType,
         };
 
         var images = await client.GetAll<PropertyImage>(p => p.PropertyId == property.Id);
 
-        propertyResponse.PropertyImages.AddRange(images.Select(s => new PropertyImageResponse
-        {
-            Url = s.ImageUrl
-        }));
+        propertyResponse.PropertyImages.AddRange(
+            images
+            .Take(3)
+            .Select(s => new GetPropertyImagesResponse
+            {
+                Url = s.ImageUrl
+            }));
 
         responseList.Add(propertyResponse);
     }
@@ -82,6 +91,44 @@ app.MapGet("/properties", async (
     return Results.Ok(responseList);
 })
 .WithName("GetProperties")
+.WithOpenApi();
+
+app.MapGet("/properties/{id}", async (
+    [FromRoute] long id,
+    [FromServices] IDatabaseClient client) =>
+{
+    var property = await client.GetById<Property>(id);
+
+    if (property == null)
+        return Results.NoContent();
+
+    var response = new GetPropertyResponse
+    {
+        Id = property.Id,
+        Url = property.Url,
+        Title = property.Title,
+        Price = property.Price,
+        Description = property.Description,
+        Details = property.Details,
+        FilterBathrooms = property.FilterBathrooms,
+        FilterBedrooms = property.FilterBedrooms,
+        FilterCost = property.FilterCost,
+        FilterGarageSpaces = property.FilterGarageSpaces,
+        FilterSquareFoot = property.FilterSquareFoot,
+        FilterType = property.FilterType,
+    };
+
+    var images = await client.GetAll<PropertyImage>(p => p.PropertyId == property.Id);
+
+    if (images != null && images.Any())
+        response.Images.AddRange(images.Select(s => new GetPropertyImagesResponse
+        {
+            Url = s.ImageUrl
+        }));
+
+    return Results.Ok(response);
+})
+.WithName("GetProperty")
 .WithOpenApi();
 
 app.Run();

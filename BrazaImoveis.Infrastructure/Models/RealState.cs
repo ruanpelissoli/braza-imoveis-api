@@ -49,6 +49,9 @@ public class RealState : BaseDatabaseModel
     [Column("filter_cost_xpath")]
     public string FilterCostXpath { get; set; } = null!;
 
+    [Column("filter_type_xpath")]
+    public string FilterTypeXpath { get; set; } = null!;
+
     [Column("pagination_type")]
     public string PaginationType { get; set; } = null!;
 

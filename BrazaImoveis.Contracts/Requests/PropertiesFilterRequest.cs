@@ -1,6 +1,7 @@
 ﻿namespace BrazaImoveis.Contracts.Requests;
 public class PropertiesFilterRequest
 {
+    public string? Type { get; set; }
     public int? Bedrooms { get; set; }
     public int? Bathrooms { get; set; }
     public int? GarageSpaces { get; set; }

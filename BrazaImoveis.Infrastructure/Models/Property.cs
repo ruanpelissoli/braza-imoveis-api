@@ -37,4 +37,7 @@ public class Property : BaseDatabaseModel
 
     [Column("filter_cost")]
     public decimal? FilterCost { get; set; }
+
+    [Column("filter_type")]
+    public string? FilterType { get; set; } = null!;
 }
