@@ -7,6 +7,8 @@ public class PropertiesFilterRequest
     public int? GarageSpaces { get; set; }
     public decimal? Price { get; set; }
     public decimal? SquareFoot { get; set; }
+    public long? StateId { get; set; }
+    public long? CityId { get; set; }
 
     public int? Page { get; set; }
     public int? Size { get; set; }

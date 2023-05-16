@@ -40,4 +40,10 @@ public class Property : BaseDatabaseModel
 
     [Column("filter_type")]
     public string? FilterType { get; set; } = null!;
+
+    [Column("filter_state")]
+    public long? StateId { get; set; }
+
+    [Column("filter_city")]
+    public long? CityId { get; set; }
 }

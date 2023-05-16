@@ -11,7 +11,6 @@ namespace BrazaImoveis.WebCrawler.WebCrawlerEngine;
 public interface IWebCrawlerEnginer
 {
     Task Run(RealState realState, bool shouldInsertIntoDb = false);
-    Task FixImages(RealState realState);
 }
 
 public record TempPropertyImage(string PropertyUrl, string ImageUrl);
@@ -35,33 +34,6 @@ public class Engine : IWebCrawlerEnginer
         {
             IgnoreCookies = true
         };
-    }
-
-    // GET ALL PROPERTIES WITHOUT IMAGES
-    // LOAD PAGE FOR ALL PROPERTIES URLS
-    // GET IMAGES
-    // INSERT IMAGES FOR PROPERTY ID
-    public async Task FixImages(RealState realState)
-    {
-        var properties = await _databaseClient.GetAll<Property>(w => w.RealStateId == realState.Id);
-
-
-        foreach (var property in properties)
-        {
-            var propertyImages = await _databaseClient.GetAll<PropertyImage>(w => w.PropertyId == property.Id);
-
-            if (propertyImages.Any()) continue;
-
-            var detailPage = await _browser.NavigateToPageAsync(new Uri(property.Url));
-
-            var images = detailPage.GetAllImagesUrls(realState);
-
-            await _databaseClient.Insert(images.Select(image => new PropertyImage
-            {
-                PropertyId = property.Id,
-                ImageUrl = image
-            }));
-        }
     }
 
     public async Task Run(RealState realState, bool shouldInsertIntoDb = false)
@@ -231,6 +203,9 @@ public class Engine : IWebCrawlerEnginer
                 FilterCost = filterCost == default ? null : filterCost,
                 FilterSquareFoot = filterSquareFoot == default ? null : filterSquareFoot,
                 FilterType = typeText!,
+
+                StateId = 23,
+                CityId = 47999
             };
 
             _propertiesToInsert.Add(property);

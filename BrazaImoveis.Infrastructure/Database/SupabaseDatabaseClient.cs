@@ -116,6 +116,12 @@ internal class SupabaseDatabaseClient : IDatabaseClient
         if (filter.SquareFoot.HasValue)
             db = db.Where(x => x.FilterSquareFoot <= filter.SquareFoot.Value);
 
+        if (filter.StateId.HasValue)
+            db = db.Where(x => x.StateId == filter.StateId.Value);
+
+        if (filter.CityId.HasValue)
+            db = db.Where(x => x.CityId == filter.CityId.Value);
+
         var (from, to) = GetPagination(filter.Page, filter.Size);
 
         var result = await db

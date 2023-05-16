@@ -37,6 +37,8 @@ app.MapGet("/properties", async (
     [FromQuery] int? garageSpaces,
     [FromQuery] decimal? price,
     [FromQuery] decimal? squareFoot,
+    [FromQuery] long? stateId,
+    [FromQuery] long? cityId,
     [FromQuery] int? page,
     [FromQuery] int? size,
     [FromServices] IDatabaseClient client) =>
@@ -50,6 +52,8 @@ app.MapGet("/properties", async (
         GarageSpaces = garageSpaces,
         Price = price,
         SquareFoot = squareFoot,
+        StateId = stateId,
+        CityId = cityId,
         Page = page ?? 0,
         Size = size ?? 10
     };
