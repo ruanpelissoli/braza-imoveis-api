@@ -63,6 +63,7 @@ app.MapGet("/properties", async (
         {
             Id = search.Id,
             RealStateId = search.RealStateId,
+            RealStateName = search.RealStateName,
             Url = search.PropertyUrl,
             Title = search.PropertyTitle,
             Price = search.PropertyPrice,

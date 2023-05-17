@@ -3,6 +3,7 @@ public class GetPropertiesResponse
 {
     public long Id { get; set; }
     public long RealStateId { get; set; }
+    public string RealStateName { get; set; } = null!;
     public string Url { get; set; } = null!;
     public string Title { get; set; } = null!;
     public string Price { get; set; } = null!;
