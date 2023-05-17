@@ -17,7 +17,7 @@ public interface IDatabaseClient
     Task Delete<TModel>(long id) where TModel : BaseDatabaseModel, new();
     Task Delete<TModel>(Expression<Func<TModel, bool>> predicate) where TModel : BaseDatabaseModel, new();
     Task Update<TModel>(TModel model) where TModel : BaseDatabaseModel, new();
-    Task<IEnumerable<Property>> FilterProperties(PropertiesFilterRequest filter);
+    Task<IEnumerable<SearchProperty>> FilterProperties(PropertiesFilterRequest filter);
 }
 
 
@@ -91,30 +91,30 @@ internal class SupabaseDatabaseClient : IDatabaseClient
         await _supabaseClient.From<TModel>().Update(model);
     }
 
-    public async Task<IEnumerable<Property>> FilterProperties(PropertiesFilterRequest filter)
+    public async Task<IEnumerable<SearchProperty>> FilterProperties(PropertiesFilterRequest filter)
     {
-        var db = _supabaseClient.From<Property>().Where(f => f.Enabled == true);
+        var db = _supabaseClient.From<SearchProperty>().Where(f => f.Enabled == true);
 
         if (!string.IsNullOrWhiteSpace(filter.Type))
         {
             var t = filter.Type.ToUpper();
-            db = db.Where(x => x.FilterType == t);
+            db = db.Where(x => x.PropertyFilterType == t);
         }
 
         if (filter.Bedrooms.HasValue)
-            db = db.Where(x => x.FilterBedrooms == filter.Bedrooms.Value);
+            db = db.Where(x => x.PropertyFilterBedrooms == filter.Bedrooms.Value);
 
         if (filter.Bathrooms.HasValue)
-            db = db.Where(x => x.FilterBathrooms == filter.Bathrooms.Value);
+            db = db.Where(x => x.PropertyFilterBathrooms == filter.Bathrooms.Value);
 
         if (filter.GarageSpaces.HasValue)
-            db = db.Where(x => x.FilterGarageSpaces == filter.GarageSpaces.Value);
+            db = db.Where(x => x.PropertyFilterGarageSpaces == filter.GarageSpaces.Value);
 
         if (filter.Price.HasValue)
-            db = db.Where(x => x.FilterCost <= filter.Price.Value);
+            db = db.Where(x => x.PropertyFilterPrice <= filter.Price.Value);
 
         if (filter.SquareFoot.HasValue)
-            db = db.Where(x => x.FilterSquareFoot <= filter.SquareFoot.Value);
+            db = db.Where(x => x.PropertyFilterSquareFoot <= filter.SquareFoot.Value);
 
         if (filter.StateId.HasValue)
             db = db.Where(x => x.StateId == filter.StateId.Value);
@@ -132,7 +132,7 @@ internal class SupabaseDatabaseClient : IDatabaseClient
         return result.Models;
     }
 
-    private (int page, int size) GetPagination(int? page, int? size)
+    private static (int page, int size) GetPagination(int? page, int? size)
     {
         var limite = size.HasValue ? +size : 3;
         var from = page.HasValue ? page.Value * limite : 0;

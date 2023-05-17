@@ -21,14 +21,10 @@ var database = serviceProvider.GetRequiredService<IDatabaseClient>();
 
 try
 {
-
-    //var realState = (await database.GetAll<RealState>(w => w.Id == 4)).First();
-    //await database.Delete<Property>(s => s.Enabled == true);
-
     foreach (var realState in await database.GetAll<RealState>())
         await engine.Run(realState, true);
 
-    // await engine.AddStatesAndCities();
+
 
     Console.ReadLine();
 }

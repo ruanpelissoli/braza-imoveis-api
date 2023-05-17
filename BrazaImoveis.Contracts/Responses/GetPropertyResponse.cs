@@ -2,6 +2,8 @@
 public class GetPropertyResponse
 {
     public long Id { get; set; }
+    public long RealStateId { get; set; }
+    public string RealStateName { get; set; } = null!;
     public string Url { get; set; } = null!;
     public string Title { get; set; } = null!;
     public string Price { get; set; } = null!;
@@ -13,5 +15,7 @@ public class GetPropertyResponse
     public decimal? FilterSquareFoot { get; set; }
     public decimal? FilterCost { get; set; }
     public string? FilterType { get; set; } = null!;
-    public List<GetPropertyImagesResponse> Images { get; set; } = new List<GetPropertyImagesResponse>();
+    public string[] Images { get; set; } = null!;
+    public string State { get; set; } = null!;
+    public string City { get; set; } = null!;
 }

@@ -15,5 +15,5 @@ public class GetPropertiesResponse
     public decimal? FilterCost { get; set; }
     public string? FilterType { get; set; } = null!;
 
-    public List<GetPropertyImagesResponse> PropertyImages { get; set; } = new List<GetPropertyImagesResponse>();
+    public string[] Images { get; set; } = null!;
 }

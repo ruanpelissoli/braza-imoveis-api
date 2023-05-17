@@ -43,8 +43,7 @@ app.MapGet("/properties", async (
     [FromQuery] int? size,
     [FromServices] IDatabaseClient client) =>
 {
-
-    var filters = new PropertiesFilterRequest
+    var properties = await client.FilterProperties(new PropertiesFilterRequest
     {
         Type = type,
         Bedrooms = bedrooms,
@@ -56,41 +55,28 @@ app.MapGet("/properties", async (
         CityId = cityId,
         Page = page ?? 0,
         Size = size ?? 10
-    };
+    });
 
-    var properties = await client.FilterProperties(filters);
-
-    var responseList = new List<GetPropertiesResponse>();
-
-    foreach (var property in properties)
+    var responseList = properties.Select(search =>
     {
-        var propertyResponse = new GetPropertiesResponse
+        return new GetPropertiesResponse()
         {
-            Id = property.Id,
-            RealStateId = property.RealStateId,
-            Url = property.Url,
-            Title = property.Title,
-            Price = property.Price,
-            FilterBathrooms = property.FilterBathrooms,
-            FilterBedrooms = property.FilterBedrooms,
-            FilterCost = property.FilterCost,
-            FilterGarageSpaces = property.FilterGarageSpaces,
-            FilterSquareFoot = property.FilterSquareFoot,
-            FilterType = property.FilterType,
+            Id = search.Id,
+            RealStateId = search.RealStateId,
+            Url = search.PropertyUrl,
+            Title = search.PropertyTitle,
+            Price = search.PropertyPrice,
+            FilterBathrooms = search.PropertyFilterBathrooms,
+            FilterBedrooms = search.PropertyFilterBedrooms,
+            FilterCost = search.PropertyFilterPrice,
+            FilterGarageSpaces = search.PropertyFilterGarageSpaces,
+            FilterSquareFoot = search.PropertyFilterSquareFoot,
+            FilterType = search.PropertyFilterType,
+            Images = search.PropertyImages.Split(",").Take(3).ToArray(),
+            State = search.StateName,
+            City = search.CityName
         };
-
-        var images = await client.GetAll<PropertyImage>(p => p.PropertyId == property.Id);
-
-        propertyResponse.PropertyImages.AddRange(
-            images
-            .Take(3)
-            .Select(s => new GetPropertyImagesResponse
-            {
-                Url = s.ImageUrl
-            }));
-
-        responseList.Add(propertyResponse);
-    }
+    });
 
     return Results.Ok(responseList);
 })
@@ -101,34 +87,31 @@ app.MapGet("/properties/{id}", async (
     [FromRoute] long id,
     [FromServices] IDatabaseClient client) =>
 {
-    var property = await client.GetById<Property>(id);
+    var search = await client.GetById<SearchProperty>(id);
 
-    if (property == null)
+    if (search == null)
         return Results.NoContent();
 
     var response = new GetPropertyResponse
     {
-        Id = property.Id,
-        Url = property.Url,
-        Title = property.Title,
-        Price = property.Price,
-        Description = property.Description,
-        Details = property.Details,
-        FilterBathrooms = property.FilterBathrooms,
-        FilterBedrooms = property.FilterBedrooms,
-        FilterCost = property.FilterCost,
-        FilterGarageSpaces = property.FilterGarageSpaces,
-        FilterSquareFoot = property.FilterSquareFoot,
-        FilterType = property.FilterType,
+        Id = search.Id,
+        RealStateId = search.RealStateId,
+        RealStateName = search.RealStateName,
+        Url = search.PropertyUrl,
+        Title = search.PropertyTitle,
+        Price = search.PropertyPrice,
+        Description = search.PropertyDescription,
+        Details = search.PropertyDetails,
+        FilterBathrooms = search.PropertyFilterBathrooms,
+        FilterBedrooms = search.PropertyFilterBedrooms,
+        FilterCost = search.PropertyFilterPrice,
+        FilterGarageSpaces = search.PropertyFilterGarageSpaces,
+        FilterSquareFoot = search.PropertyFilterSquareFoot,
+        FilterType = search.PropertyFilterType,
+        Images = search.PropertyImages.Split(",").ToArray(),
+        State = search.StateName,
+        City = search.CityName
     };
-
-    var images = await client.GetAll<PropertyImage>(p => p.PropertyId == property.Id);
-
-    if (images != null && images.Any())
-        response.Images.AddRange(images.Select(s => new GetPropertyImagesResponse
-        {
-            Url = s.ImageUrl
-        }));
 
     return Results.Ok(response);
 })
