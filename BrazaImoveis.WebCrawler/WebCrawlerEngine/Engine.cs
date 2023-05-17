@@ -20,8 +20,7 @@ public class Engine : IWebCrawlerEnginer
     private readonly IDatabaseClient _databaseClient;
     private readonly ScrapingBrowser _browser;
 
-    private ConcurrentBag<Property> _propertiesToInsert = new();
-    private ConcurrentBag<TempPropertyImage> _propertyImagesToInsert = new();
+    private ConcurrentBag<SearchProperty> _propertiesToInsert = new();
     private ConcurrentBag<string> _visitedUrls = new();
 
     private ParallelOptions ParallelOptions { get; set; } = null!;
@@ -48,7 +47,7 @@ public class Engine : IWebCrawlerEnginer
             CancellationToken = CancellationTokenSource.Token
         };
 
-        var visited = (await _databaseClient.GetAll<Property>(w => w.RealStateId == realState.Id)).Select(s => s.Url.Replace(realState.DomainUrl!, ""));
+        var visited = (await _databaseClient.GetAll<SearchProperty>(w => w.RealStateId == realState.Id)).Select(s => s.PropertyUrl.Replace(realState.DomainUrl!, ""));
 
         _visitedUrls = new ConcurrentBag<string>(visited);
 
@@ -75,19 +74,12 @@ public class Engine : IWebCrawlerEnginer
         if (shouldInsertIntoDb)
         {
             if (_propertiesToInsert.Any())
-                _propertiesToInsert = new ConcurrentBag<Property>((await _databaseClient.Insert(_propertiesToInsert)).ToList());
-
-            if (_propertiesToInsert.Any() && _propertyImagesToInsert.Any())
-                await _databaseClient.Insert(_propertyImagesToInsert.Select(image => new PropertyImage
-                {
-                    PropertyId = _propertiesToInsert.First(f => f.Url == image.PropertyUrl).Id,
-                    ImageUrl = image.ImageUrl
-                }));
+                _propertiesToInsert = new ConcurrentBag<SearchProperty>(
+                    (await _databaseClient.Insert(_propertiesToInsert)).ToList());
         }
 
         _visitedUrls.Clear();
         _propertiesToInsert.Clear();
-        _propertyImagesToInsert.Clear();
     }
 
     private async Task FetchPageInformation(RealState realState, string url, int currentPage)
@@ -184,35 +176,39 @@ public class Engine : IWebCrawlerEnginer
             }
             else typeText = detailPage.Html.SelectSingleNode(realState.FilterTypeXpath)?.InnerText;
 
-            _ = decimal.TryParse(string.IsNullOrWhiteSpace(priceText) ? null : priceText.SanitizeToDecimal(), out decimal filterCost);
+            _ = decimal.TryParse(string.IsNullOrWhiteSpace(priceText) ? null : priceText.SanitizeToDecimal(), out decimal filterPrice);
 
             _ = decimal.TryParse(string.IsNullOrWhiteSpace(squarefootText) ? null : squarefootText.SanitizeToDecimal(), out decimal filterSquareFoot);
 
-            var property = new Property
+            var property = new SearchProperty
             {
-                Url = detailPage.AbsoluteUrl.ToString(),
                 RealStateId = realState.Id,
-                Title = title.Sanitize(),
-                Price = price.Sanitize(),
-                Description = description?.Sanitize() ?? string.Empty,
-                Details = details?.Sanitize() ?? string.Empty,
+                RealStateName = realState.Name,
+                RealStateDomainUrl = realState.DomainUrl,
+                PropertyUrl = detailPage.AbsoluteUrl.ToString(),
+                PropertyTitle = title.Sanitize(),
+                PropertyPrice = price.Sanitize(),
+                PropertyDescription = description?.Sanitize() ?? string.Empty,
+                PropertyDetails = details?.Sanitize() ?? string.Empty,
+                PropertyImages = string.Join(',', images),
 
-                FilterBedrooms = string.IsNullOrWhiteSpace(bedroomsText) ? null : int.Parse(bedroomsText),
-                FilterBathrooms = string.IsNullOrWhiteSpace(bathroomsText) ? null : int.Parse(bathroomsText),
-                FilterGarageSpaces = string.IsNullOrWhiteSpace(garageSpaceText) ? null : int.Parse(garageSpaceText),
-                FilterCost = filterCost == default ? null : filterCost,
-                FilterSquareFoot = filterSquareFoot == default ? null : filterSquareFoot,
-                FilterType = typeText!,
+                PropertyFilterBedrooms = string.IsNullOrWhiteSpace(bedroomsText) ? null : int.Parse(bedroomsText),
+                PropertyFilterBathrooms = string.IsNullOrWhiteSpace(bathroomsText) ? null : int.Parse(bathroomsText),
+                PropertyFilterGarageSpaces = string.IsNullOrWhiteSpace(garageSpaceText) ? null : int.Parse(garageSpaceText),
+                PropertyFilterPrice = filterPrice == default ? null : filterPrice,
+                PropertyFilterSquareFoot = filterSquareFoot == default ? null : filterSquareFoot,
+                PropertyFilterType = typeText!,
 
+                // TODO: get from table
                 StateId = 23,
-                CityId = 47999
+                StateKey = "RS",
+                StateName = "Rio Grande do Sul",
+                CityId = 47999,
+                CityName = "Capão da Canoa",
             };
 
             _propertiesToInsert.Add(property);
-            _visitedUrls.Add(property.Url.Replace(realState.DomainUrl, ""));
-
-            foreach (var img in images)
-                _propertyImagesToInsert.Add(new TempPropertyImage(property.Url, img));
+            _visitedUrls.Add(property.PropertyUrl.Replace(realState.DomainUrl, ""));
 
             if (_propertiesToInsert.Count >= 50)
                 CancellationTokenSource.Cancel(false);
