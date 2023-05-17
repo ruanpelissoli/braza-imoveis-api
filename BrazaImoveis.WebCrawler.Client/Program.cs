@@ -24,8 +24,6 @@ try
     foreach (var realState in await database.GetAll<RealState>())
         await engine.Run(realState, true);
 
-
-
     Console.ReadLine();
 }
 catch (Exception ex)

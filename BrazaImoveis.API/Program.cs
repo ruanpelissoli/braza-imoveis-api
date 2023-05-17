@@ -1,29 +1,28 @@
-using AspNetCoreRateLimit;
+using BrazaImoveis.API.Middlewares;
 using BrazaImoveis.Contracts.Requests;
 using BrazaImoveis.Contracts.Responses;
 using BrazaImoveis.Infrastructure;
 using BrazaImoveis.Infrastructure.Database;
 using BrazaImoveis.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMemoryCache();
-builder.Services.Configure<IpRateLimitOptions>(options =>
+builder.Services.AddRateLimiter(options =>
 {
-    options.GeneralRules = new List<RateLimitRule>
-    {
-        new RateLimitRule
-        {
-            Endpoint = "*",
-            Limit = 50,
-            Period = "1m"
-        }
-    };
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 10,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+    options.RejectionStatusCode = 429;
 });
-builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
-builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
-builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -42,7 +41,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseIpRateLimiting();
+app.UseRateLimiter();
 
 app.UseCors();
 
@@ -50,6 +49,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<AuthenticationMiddleware>();
 
 app.MapGet("/properties", async (
     [FromQuery] string? type,
