@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using BrazaImoveis.Contracts.Requests;
 using BrazaImoveis.Contracts.Responses;
 using BrazaImoveis.Infrastructure;
@@ -6,6 +7,24 @@ using BrazaImoveis.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.GeneralRules = new List<RateLimitRule>
+    {
+        new RateLimitRule
+        {
+            Endpoint = "*",
+            Limit = 50,
+            Period = "1m"
+        }
+    };
+});
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -22,6 +41,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseIpRateLimiting();
 
 app.UseCors();
 
