@@ -1,4 +1,5 @@
-﻿using BrazaImoveis.Infrastructure.Database;
+﻿using BrazaImoveis.Infrastructure.Cache;
+using BrazaImoveis.Infrastructure.Database;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,8 @@ public static class DependencyInjection
                         AutoConnectRealtime = true
                     }))
 
-            .AddScoped<IDatabaseClient, SupabaseDatabaseClient>();
+            .AddScoped<IDatabaseClient, SupabaseDatabaseClient>()
+            .AddScoped<ISupabaseCachedClient, SupabaseCachedClient>()
+            .Decorate<ISupabaseCachedClient, CacheDatabaseDecorator>();
     }
 }

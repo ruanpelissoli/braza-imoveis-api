@@ -3,12 +3,12 @@ using BrazaImoveis.Contracts.Requests;
 using BrazaImoveis.Contracts.Responses;
 using BrazaImoveis.Infrastructure;
 using BrazaImoveis.Infrastructure.Database;
-using BrazaImoveis.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMemoryCache();
 builder.Services.AddRateLimiter(options =>
 {
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
@@ -108,9 +108,9 @@ app.MapGet("/properties", async (
 
 app.MapGet("/properties/{id}", async (
     [FromRoute] long id,
-    [FromServices] IDatabaseClient client) =>
+    [FromServices] ISupabaseCachedClient cachedClient) =>
 {
-    var search = await client.GetById<SearchProperty>(id);
+    var search = await cachedClient.GetPropertyById(id);
 
     if (search == null)
         return Results.NoContent();
@@ -139,6 +139,53 @@ app.MapGet("/properties/{id}", async (
     return Results.Ok(response);
 })
 .WithName("GetProperty")
+.WithOpenApi();
+
+app.MapGet("/states", async (
+    [FromServices] ISupabaseCachedClient cachedClient) =>
+{
+    var states = await cachedClient.GetStates();
+
+    if (states == null || !states.Any())
+        return Results.NoContent();
+
+    var response = states.Select(s =>
+    {
+        return new GetStatesResponse
+        {
+            Id = s.Id,
+            Key = s.Key,
+            Name = s.Name,
+        };
+    });
+
+    return Results.Ok(response);
+})
+.WithName("GetStates")
+.WithOpenApi();
+
+app.MapGet("/cities/{stateId}", async (
+    [FromRoute] long stateId,
+    [FromServices] ISupabaseCachedClient cachedClient) =>
+{
+    var cities = await cachedClient.GetCities(stateId);
+
+    if (cities == null || !cities.Any())
+        return Results.NoContent();
+
+    var response = cities.Select(s =>
+    {
+        return new GetCitiesResponse
+        {
+            Id = s.Id,
+            StateId = s.StateId,
+            Name = s.Name,
+        };
+    });
+
+    return Results.Ok(response);
+})
+.WithName("GetCities")
 .WithOpenApi();
 
 app.Run();

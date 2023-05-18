@@ -9,7 +9,6 @@ namespace BrazaImoveis.Infrastructure.Database;
 
 public interface IDatabaseClient
 {
-    Task<TModel?> GetById<TModel>(long id) where TModel : BaseDatabaseModel, new();
     Task<IEnumerable<TModel>> GetAll<TModel>() where TModel : BaseDatabaseModel, new();
     Task<IEnumerable<TModel>> GetAll<TModel>(Expression<Func<TModel, bool>> predicate) where TModel : BaseDatabaseModel, new();
     Task<TModel> Insert<TModel>(TModel model) where TModel : BaseDatabaseModel, new();
@@ -28,15 +27,6 @@ internal class SupabaseDatabaseClient : IDatabaseClient
     public SupabaseDatabaseClient(Supabase.Client supabaseClient)
     {
         _supabaseClient = supabaseClient;
-    }
-
-    public async Task<TModel?> GetById<TModel>(long id) where TModel : BaseDatabaseModel, new()
-    {
-        var dbResponse = await _supabaseClient.From<TModel>()
-            .Where(t => t.Enabled == true && t.Id == id)
-            .Get();
-
-        return dbResponse.Models.FirstOrDefault();
     }
 
     public async Task<IEnumerable<TModel>> GetAll<TModel>() where TModel : BaseDatabaseModel, new()
