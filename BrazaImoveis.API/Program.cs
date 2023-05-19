@@ -4,25 +4,24 @@ using BrazaImoveis.Contracts.Responses;
 using BrazaImoveis.Infrastructure;
 using BrazaImoveis.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMemoryCache();
-builder.Services.AddRateLimiter(options =>
-{
-    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
-            factory: partition => new FixedWindowRateLimiterOptions
-            {
-                AutoReplenishment = true,
-                PermitLimit = 10,
-                QueueLimit = 0,
-                Window = TimeSpan.FromMinutes(1)
-            }));
-    options.RejectionStatusCode = 429;
-});
+//builder.Services.AddRateLimiter(options =>
+//{
+//    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+//        RateLimitPartition.GetFixedWindowLimiter(
+//            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+//            factory: partition => new FixedWindowRateLimiterOptions
+//            {
+//                AutoReplenishment = true,
+//                PermitLimit = 10,
+//                QueueLimit = 0,
+//                Window = TimeSpan.FromMinutes(1)
+//            }));
+//    options.RejectionStatusCode = 429;
+//});
 
 
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -41,7 +40,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseRateLimiter();
+//app.UseRateLimiter();
 
 app.UseCors();
 
