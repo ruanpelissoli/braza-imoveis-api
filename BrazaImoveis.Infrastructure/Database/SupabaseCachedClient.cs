@@ -7,6 +7,7 @@ public interface ISupabaseCachedClient
     Task<SearchProperty?> GetPropertyById(long id);
     Task<IEnumerable<State>> GetStates();
     Task<IEnumerable<City>> GetCities(long stateId);
+    Task<IEnumerable<SearchProperty>> GetSimilarProperties(SearchProperty property);
 }
 
 public class SupabaseCachedClient : ISupabaseCachedClient
@@ -16,6 +17,7 @@ public class SupabaseCachedClient : ISupabaseCachedClient
     public SupabaseCachedClient(Supabase.Client supabaseClient)
     {
         _supabaseClient = supabaseClient;
+
     }
     public async Task<SearchProperty?> GetPropertyById(long id)
     {
@@ -42,5 +44,10 @@ public class SupabaseCachedClient : ISupabaseCachedClient
          .Get();
 
         return dbResponse.Models;
+    }
+
+    public Task<IEnumerable<SearchProperty>> GetSimilarProperties(SearchProperty property)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -7,7 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMemoryCache();
+builder.Services.AddMemoryCache(options =>
+{
+    options.ExpirationScanFrequency = TimeSpan.FromHours(6);
+});
 //builder.Services.AddRateLimiter(options =>
 //{
 //    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
@@ -74,8 +77,8 @@ app.MapGet("/properties", async (
         SquareFoot = squareFoot,
         StateId = stateId,
         CityId = cityId,
-        Page = page ?? 0,
-        Size = size ?? 10
+        Page = page ?? 1,
+        Size = size ?? 12
     });
 
     var responseList = properties.Select(search =>
@@ -114,6 +117,8 @@ app.MapGet("/properties/{id}", async (
     if (search == null)
         return Results.NoContent();
 
+    var similarProperties = await cachedClient.GetSimilarProperties(search);
+
     var response = new GetPropertyResponse
     {
         Id = search.Id,
@@ -132,7 +137,28 @@ app.MapGet("/properties/{id}", async (
         FilterType = search.PropertyFilterType,
         Images = search.PropertyImages.Split(",").ToArray(),
         State = search.StateName,
-        City = search.CityName
+        City = search.CityName,
+        SimilarProperties = similarProperties.Select(search =>
+        {
+            return new GetPropertiesResponse()
+            {
+                Id = search.Id,
+                RealStateId = search.RealStateId,
+                RealStateName = search.RealStateName,
+                Url = search.PropertyUrl,
+                Title = search.PropertyTitle,
+                Price = search.PropertyPrice,
+                FilterBathrooms = search.PropertyFilterBathrooms,
+                FilterBedrooms = search.PropertyFilterBedrooms,
+                FilterCost = search.PropertyFilterPrice,
+                FilterGarageSpaces = search.PropertyFilterGarageSpaces,
+                FilterSquareFoot = search.PropertyFilterSquareFoot,
+                FilterType = search.PropertyFilterType,
+                Images = search.PropertyImages.Split(",").Take(3).ToArray(),
+                State = search.StateName,
+                City = search.CityName
+            };
+        })
     };
 
     return Results.Ok(response);

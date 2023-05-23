@@ -18,4 +18,5 @@ public class GetPropertyResponse
     public string[] Images { get; set; } = null!;
     public string State { get; set; } = null!;
     public string City { get; set; } = null!;
+    public IEnumerable<GetPropertiesResponse> SimilarProperties { get; set; } = new List<GetPropertiesResponse>();
 }

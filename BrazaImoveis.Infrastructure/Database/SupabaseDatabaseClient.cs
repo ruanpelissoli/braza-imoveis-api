@@ -122,12 +122,14 @@ internal class SupabaseDatabaseClient : IDatabaseClient
         return result.Models;
     }
 
-    private static (int page, int size) GetPagination(int? page, int? size)
+    private static (int page, int size) GetPagination(int page, int size)
     {
-        var limite = size.HasValue ? +size : 3;
-        var from = page.HasValue ? page.Value * limite : 0;
-        var to = page.HasValue ? from + size!.Value - 1 : size!.Value - 1;
+        page--;
 
-        return (from.Value, to.Value);
+        var limit = +size;
+        var from = page * limit;
+        var to = from + size - 1;
+
+        return (from, to);
     }
 }
