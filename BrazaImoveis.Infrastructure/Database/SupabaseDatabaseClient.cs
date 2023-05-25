@@ -100,11 +100,17 @@ internal class SupabaseDatabaseClient : IDatabaseClient
         if (filter.GarageSpaces.HasValue)
             db = db.Where(x => x.PropertyFilterGarageSpaces == filter.GarageSpaces.Value);
 
-        if (filter.Price.HasValue)
-            db = db.Where(x => x.PropertyFilterPrice <= filter.Price.Value);
+        if (filter.MinPrice.HasValue)
+            db = db.Where(x => x.PropertyFilterPrice >= filter.MinPrice.Value);
 
-        if (filter.SquareFoot.HasValue)
-            db = db.Where(x => x.PropertyFilterSquareFoot <= filter.SquareFoot.Value);
+        if (filter.MaxPrice.HasValue)
+            db = db.Where(x => x.PropertyFilterPrice <= filter.MaxPrice.Value);
+
+        if (filter.MinSquareFoot.HasValue)
+            db = db.Where(x => x.PropertyFilterSquareFoot >= filter.MinSquareFoot.Value);
+
+        if (filter.MaxSquareFoot.HasValue)
+            db = db.Where(x => x.PropertyFilterSquareFoot <= filter.MaxSquareFoot.Value);
 
         if (filter.StateId.HasValue)
             db = db.Where(x => x.StateId == filter.StateId.Value);
