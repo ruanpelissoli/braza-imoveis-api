@@ -16,7 +16,7 @@ public class PropertiesModule : CarterModule
 
     public override void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/properties", async (
+        app.MapGet("/", async (
             [FromQuery] string? type,
             [FromQuery] int? bedrooms,
             [FromQuery] int? bathrooms,
@@ -75,7 +75,7 @@ public class PropertiesModule : CarterModule
         .WithName("GetProperties")
         .WithOpenApi();
 
-        app.MapGet("/properties/{id}", async (
+        app.MapGet("/{id}", async (
             [FromRoute] long id,
             [FromServices] ISupabaseCachedClient cachedClient) =>
         {
