@@ -1,5 +1,6 @@
 using BrazaImoveis.Infrastructure;
 using Carter;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,20 +8,21 @@ builder.Services.AddMemoryCache(options =>
 {
     options.ExpirationScanFrequency = TimeSpan.FromHours(6);
 });
-//builder.Services.AddRateLimiter(options =>
-//{
-//    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-//        RateLimitPartition.GetFixedWindowLimiter(
-//            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
-//            factory: partition => new FixedWindowRateLimiterOptions
-//            {
-//                AutoReplenishment = true,
-//                PermitLimit = 10,
-//                QueueLimit = 0,
-//                Window = TimeSpan.FromMinutes(1)
-//            }));
-//    options.RejectionStatusCode = 429;
-//});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 50,
+                QueueLimit = 0,
+                Window = TimeSpan.FromSeconds(10)
+            }));
+    options.RejectionStatusCode = 429;
+});
 
 builder.Services.AddCarter();
 builder.Services.AddInfrastructure(builder.Configuration);
