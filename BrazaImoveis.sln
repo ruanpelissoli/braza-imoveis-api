@@ -11,7 +11,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrazaImoveis.WebCrawler.Cli
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrazaImoveis.Infrastructure", "BrazaImoveis.Infrastructure\BrazaImoveis.Infrastructure.csproj", "{74D4CD86-BC6F-4655-A684-93BF908670B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrazaImoveis.Contracts", "BrazaImoveis.Contracts\BrazaImoveis.Contracts.csproj", "{9B79C9A0-8692-4291-9A36-1387CAA0BFC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrazaImoveis.Contracts", "BrazaImoveis.Contracts\BrazaImoveis.Contracts.csproj", "{9B79C9A0-8692-4291-9A36-1387CAA0BFC1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AE9E5517-0F40-46A1-A606-A0946167D56F}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -32,10 +32,8 @@ public class CacheDatabaseDecorator : ISupabaseCachedClient
     {
         var key = $"Property_{id}";
 
-        var cached = _memoryCache.Get<SearchProperty>(key);
-
-        if (cached != null)
-            return cached;
+        if (_memoryCache.TryGetValue(key, out SearchProperty cachedResponse))
+            return cachedResponse!;
 
         var property = await _cachedDatabaseClient.GetPropertyById(id);
 
@@ -49,10 +47,8 @@ public class CacheDatabaseDecorator : ISupabaseCachedClient
     {
         var key = $"Property_{property.Id}_similar";
 
-        var cached = _memoryCache.Get<IEnumerable<SearchProperty>>(key);
-
-        if (cached != null)
-            return cached;
+        if (_memoryCache.TryGetValue(key, out IEnumerable<SearchProperty> cachedResponse))
+            return cachedResponse!;
 
         var similarProperties = await _databaseClient.FilterProperties(new PropertiesFilterRequest
         {
@@ -72,10 +68,8 @@ public class CacheDatabaseDecorator : ISupabaseCachedClient
     {
         var key = "states";
 
-        var cached = _memoryCache.Get<IEnumerable<State>>(key);
-
-        if (cached != null)
-            return cached;
+        if (_memoryCache.TryGetValue(key, out IEnumerable<State> cachedResponse))
+            return cachedResponse!;
 
         var states = await _cachedDatabaseClient.GetStates();
 
@@ -88,10 +82,8 @@ public class CacheDatabaseDecorator : ISupabaseCachedClient
     {
         var key = $"cities_{stateId}";
 
-        var cached = _memoryCache.Get<IEnumerable<City>>(key);
-
-        if (cached != null)
-            return cached;
+        if (_memoryCache.TryGetValue(key, out IEnumerable<City> cachedResponse))
+            return cachedResponse!;
 
         var cities = await _cachedDatabaseClient.GetCities(stateId);
 
