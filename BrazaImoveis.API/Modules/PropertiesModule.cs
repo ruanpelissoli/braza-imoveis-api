@@ -1,5 +1,4 @@
-﻿using BrazaImoveis.API.Filters;
-using BrazaImoveis.Contracts.Requests;
+﻿using BrazaImoveis.Contracts.Requests;
 using BrazaImoveis.Contracts.Responses;
 using BrazaImoveis.Infrastructure.Database;
 using Carter;
@@ -11,7 +10,6 @@ public class PropertiesModule : CarterModule
 {
     public PropertiesModule() : base("properties")
     {
-
     }
 
     public override void AddRoutes(IEndpointRouteBuilder app)
@@ -29,9 +27,9 @@ public class PropertiesModule : CarterModule
             [FromQuery] long? cityId,
             [FromQuery] int? page,
             [FromQuery] int? size,
-            [FromServices] IDatabaseClient client) =>
+            [FromServices] IDatabaseClient _databaseClient) =>
         {
-            var properties = await client.FilterProperties(new PropertiesFilterRequest
+            var properties = await _databaseClient.FilterProperties(new PropertiesFilterRequest
             {
                 Type = type,
                 Bedrooms = bedrooms,
@@ -71,20 +69,19 @@ public class PropertiesModule : CarterModule
 
             return Results.Ok(responseList);
         })
-        .AddEndpointFilter<ApiKeyEndpointFilter>()
         .WithName("GetProperties")
         .WithOpenApi();
 
         app.MapGet("/{id}", async (
             [FromRoute] long id,
-            [FromServices] ISupabaseCachedClient cachedClient) =>
+            [FromServices] ISupabaseCachedClient _cachedDatabaseClient) =>
         {
-            var search = await cachedClient.GetPropertyById(id);
+            var search = await _cachedDatabaseClient.GetPropertyById(id);
 
             if (search == null)
                 return Results.NoContent();
 
-            var similarProperties = await cachedClient.GetSimilarProperties(search);
+            var similarProperties = await _cachedDatabaseClient.GetSimilarProperties(search);
 
             var response = new GetPropertyResponse
             {
@@ -130,7 +127,6 @@ public class PropertiesModule : CarterModule
 
             return Results.Ok(response);
         })
-        .AddEndpointFilter<ApiKeyEndpointFilter>()
         .WithName("GetProperty")
         .WithOpenApi();
     }

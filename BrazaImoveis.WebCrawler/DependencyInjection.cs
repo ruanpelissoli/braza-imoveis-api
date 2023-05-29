@@ -6,5 +6,5 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddWebCrawlerEngine(this IServiceCollection services) =>
         services
-            .AddScoped<IWebCrawlerEnginer, Engine>();
+            .AddScoped<IWebCrawlerEngine, Engine>();
 }

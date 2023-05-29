@@ -8,14 +8,14 @@ using System.Collections.Concurrent;
 
 namespace BrazaImoveis.WebCrawler.WebCrawlerEngine;
 
-public interface IWebCrawlerEnginer
+public interface IWebCrawlerEngine
 {
     Task Run(RealState realState, bool shouldInsertIntoDb = false);
 }
 
 public record TempPropertyImage(string PropertyUrl, string ImageUrl);
 
-public class Engine : IWebCrawlerEnginer
+public class Engine : IWebCrawlerEngine
 {
     private readonly IDatabaseClient _databaseClient;
     private readonly ScrapingBrowser _browser;
@@ -95,8 +95,7 @@ public class Engine : IWebCrawlerEnginer
         var links = page.GetAllValidLinks(realState).ToList()
                         .Where(s => !_visitedUrls.Contains(s));
 
-        await Parallel.ForEachAsync(links, ParallelOptions,
-        async (link, ct) =>
+        foreach (var link in links)
         {
             var nextUrl = $"{realState.DomainUrl}{link}";
 
@@ -109,7 +108,7 @@ public class Engine : IWebCrawlerEnginer
             {
                 var pageNumber = int.Parse(nextUrl.Split('=').Last());
 
-                if (pageNumber <= currentPage)
+                if (pageNumber <= currentPage || pageNumber - currentPage != 1)
                     return;
 
                 Interlocked.Increment(ref currentPage);
@@ -117,7 +116,7 @@ public class Engine : IWebCrawlerEnginer
             }
             else
                 SavePageDetails(realState, await _browser.NavigateToPageAsync(new Uri(nextUrl)));
-        });
+        }
 
         if (realState.PaginationType == PaginationTypes.ScrollWithPaging)
         {
@@ -136,8 +135,8 @@ public class Engine : IWebCrawlerEnginer
     {
         try
         {
-            var price = detailPage.Html.SelectSingleNode(realState.PricingXpath).InnerText;
-            var title = detailPage.Html.SelectSingleNode(realState.TitleXpath).InnerText;
+            var price = detailPage.Html.SelectSingleNode(realState.PricingXpath)?.InnerText;
+            var title = detailPage.Html.SelectSingleNode(realState.TitleXpath)?.InnerText;
             var images = detailPage.GetAllImagesUrls(realState);
             var description = detailPage.Html.SelectSingleNode(realState.DescriptionXpath)?.InnerText;
             var detailsList = detailPage.Html.SelectSingleNode(realState.DetailsXpath);
@@ -178,7 +177,7 @@ public class Engine : IWebCrawlerEnginer
 
             _ = decimal.TryParse(string.IsNullOrWhiteSpace(priceText) ? null : priceText.SanitizeToDecimal(), out decimal filterPrice);
 
-            _ = decimal.TryParse(string.IsNullOrWhiteSpace(squarefootText) ? null : squarefootText.SanitizeToDecimal(), out decimal filterSquareFoot);
+            _ = decimal.TryParse(string.IsNullOrWhiteSpace(squarefootText) ? null : squarefootText.SanitizeToDecimal().SanitizeFilters(), out decimal filterSquareFoot);
 
             var property = new SearchProperty
             {
@@ -186,15 +185,15 @@ public class Engine : IWebCrawlerEnginer
                 RealStateName = realState.Name,
                 RealStateDomainUrl = realState.DomainUrl,
                 PropertyUrl = detailPage.AbsoluteUrl.ToString(),
-                PropertyTitle = title.Sanitize(),
-                PropertyPrice = price.Sanitize(),
+                PropertyTitle = title?.Sanitize() ?? string.Empty,
+                PropertyPrice = price?.Sanitize() ?? string.Empty,
                 PropertyDescription = description?.Sanitize() ?? string.Empty,
                 PropertyDetails = details?.Sanitize() ?? string.Empty,
                 PropertyImages = string.Join(',', images),
 
-                PropertyFilterBedrooms = string.IsNullOrWhiteSpace(bedroomsText) ? null : int.Parse(bedroomsText),
-                PropertyFilterBathrooms = string.IsNullOrWhiteSpace(bathroomsText) ? null : int.Parse(bathroomsText),
-                PropertyFilterGarageSpaces = string.IsNullOrWhiteSpace(garageSpaceText) ? null : int.Parse(garageSpaceText),
+                PropertyFilterBedrooms = string.IsNullOrWhiteSpace(bedroomsText) ? null : int.Parse(bedroomsText.SanitizeFilters()),
+                PropertyFilterBathrooms = string.IsNullOrWhiteSpace(bathroomsText) ? null : int.Parse(bathroomsText.SanitizeFilters()),
+                PropertyFilterGarageSpaces = string.IsNullOrWhiteSpace(garageSpaceText) ? null : int.Parse(garageSpaceText.SanitizeFilters()),
                 PropertyFilterPrice = filterPrice == default ? null : filterPrice,
                 PropertyFilterSquareFoot = filterSquareFoot == default ? null : filterSquareFoot,
                 PropertyFilterType = typeText!,
@@ -203,7 +202,7 @@ public class Engine : IWebCrawlerEnginer
                 StateId = 23,
                 StateKey = "RS",
                 StateName = "Rio Grande do Sul",
-                CityId = 47999,
+                CityId = 1,
                 CityName = "Capão da Canoa",
             };
 

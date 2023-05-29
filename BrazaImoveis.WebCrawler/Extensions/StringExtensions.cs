@@ -22,4 +22,17 @@ public static class StringExtensions
             .Trim();
     }
 
+    public static string SanitizeFilters(this string text)
+    {
+        return text
+           .Replace("quarto", "")
+           .Replace("banheiro", "")
+           .Replace("vaga", "")
+           .Replace("(s)", "")
+           .Replace("área", "")
+           .Replace("area", "")
+           .Replace("útil", "")
+           .Replace("util", "")
+           .Trim();
+    }
 }

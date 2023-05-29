@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BrazaImoveis.Contracts\BrazaImoveis.Contracts.csproj" />
     <ProjectReference Include="..\BrazaImoveis.Infrastructure\BrazaImoveis.Infrastructure.csproj" />
+    <ProjectReference Include="..\BrazaImoveis.WebCrawler\BrazaImoveis.WebCrawler.csproj" />
   </ItemGroup>
 
 </Project>

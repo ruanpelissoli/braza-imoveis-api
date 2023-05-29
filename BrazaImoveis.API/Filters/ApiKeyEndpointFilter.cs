@@ -13,13 +13,13 @@ public class ApiKeyEndpointFilter : IEndpointFilter
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)
     {
-        //if (!context.HttpContext.Request.Headers.TryGetValue("X-API-KEY", out var extractedApiKey))
-        //    return TypedResults.Unauthorized();
+        if (!context.HttpContext.Request.Headers.TryGetValue("X-API-KEY", out var extractedApiKey))
+            return TypedResults.Unauthorized();
 
-        //var apiKey = _configuration.GetValue<string>("ApiKey");
+        var apiKey = _configuration.GetValue<string>("ApiKey");
 
-        //if (!string.IsNullOrEmpty(extractedApiKey) && extractedApiKey.Equals(apiKey))
-        //    return TypedResults.Unauthorized();
+        if (!string.IsNullOrEmpty(extractedApiKey) && extractedApiKey.Equals(apiKey))
+            return TypedResults.Unauthorized();
 
         return await next(context);
     }

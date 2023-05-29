@@ -1,4 +1,5 @@
 using BrazaImoveis.Infrastructure;
+using BrazaImoveis.WebCrawler;
 using Carter;
 using System.Threading.RateLimiting;
 
@@ -26,6 +27,7 @@ builder.Services.AddRateLimiter(options =>
 
 builder.Services.AddCarter();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddWebCrawlerEngine();
 
 builder.Services.AddCors(o =>
     o.AddDefaultPolicy(builder =>

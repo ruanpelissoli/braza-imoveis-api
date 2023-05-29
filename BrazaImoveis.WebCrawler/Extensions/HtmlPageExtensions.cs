@@ -51,6 +51,6 @@ public static class HtmlPageExtensions
         }
         linkQuery = linkQuery.Where(filteredLinks.Contains);
 
-        return linkQuery.Distinct();
+        return linkQuery.Distinct().OrderByDescending(s => s);
     }
 }

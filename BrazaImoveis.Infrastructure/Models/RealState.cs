@@ -63,4 +63,10 @@ public class RealState : BaseDatabaseModel
 
     [Column("time_between_requests")]
     public int TimeBetweenRequests { get; set; }
+
+    [Column("plan_id")]
+    public long PlanId { get; set; }
+
+    [Column("plan_active")]
+    public bool PlanActive { get; set; }
 }

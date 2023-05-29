@@ -1,5 +1,4 @@
-﻿using BrazaImoveis.API.Filters;
-using BrazaImoveis.Contracts.Responses;
+﻿using BrazaImoveis.Contracts.Responses;
 using BrazaImoveis.Infrastructure.Database;
 using Carter;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +10,9 @@ public class StateAndCitiesModule : CarterModule
     public override void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/states", async (
-            [FromServices] ISupabaseCachedClient cachedClient) =>
+            [FromServices] ISupabaseCachedClient _cachedDatabaseClient) =>
         {
-            var states = await cachedClient.GetStates();
+            var states = await _cachedDatabaseClient.GetStates();
 
             if (states == null || !states.Any())
                 return Results.NoContent();
@@ -30,15 +29,14 @@ public class StateAndCitiesModule : CarterModule
 
             return Results.Ok(response);
         })
-       .AddEndpointFilter<ApiKeyEndpointFilter>()
        .WithName("GetStates")
        .WithOpenApi();
 
         app.MapGet("/cities/{stateId}", async (
             [FromRoute] long stateId,
-            [FromServices] ISupabaseCachedClient cachedClient) =>
+            [FromServices] ISupabaseCachedClient _cachedDatabaseClient) =>
         {
-            var cities = await cachedClient.GetCities(stateId);
+            var cities = await _cachedDatabaseClient.GetCities(stateId);
 
             if (cities == null || !cities.Any())
                 return Results.NoContent();
@@ -55,7 +53,6 @@ public class StateAndCitiesModule : CarterModule
 
             return Results.Ok(response);
         })
-        .AddEndpointFilter<ApiKeyEndpointFilter>()
         .WithName("GetCities")
         .WithOpenApi();
     }

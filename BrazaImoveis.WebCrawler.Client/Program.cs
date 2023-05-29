@@ -16,7 +16,7 @@ var serviceProvider = new ServiceCollection()
     .AddWebCrawlerEngine()
     .BuildServiceProvider();
 
-var engine = serviceProvider.GetRequiredService<IWebCrawlerEnginer>();
+var engine = serviceProvider.GetRequiredService<IWebCrawlerEngine>();
 var database = serviceProvider.GetRequiredService<IDatabaseClient>();
 
 try
